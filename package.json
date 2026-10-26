@@ -1,0 +1,31 @@
+{
+  "name": "seuvoto-bugadao",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Seu Voto · o que cada político fez, com a fonte oficial do lado",
+  "author": "AdaoGum",
+  "scripts": {
+    "dev": "vite",
+    "dev:api": "wrangler dev --test-scheduled --port 8787",
+    "db:local": "wrangler d1 migrations apply DB --local",
+    "coletar:local": "node scripts/coletar-local.mjs",
+    "tipos": "wrangler types worker/worker-configuration.d.ts --include-runtime=false",
+    "build": "vue-tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.worker.json && vite build",
+    "test": "vitest run",
+    "deploy": "npm test && npm run build && wrangler d1 migrations apply DB --remote && wrangler deploy"
+  },
+  "dependencies": {
+    "vue": "^3.5.43",
+    "vue-router": "^4.6.4"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261023.1",
+    "@vitejs/plugin-vue": "^6.0.10",
+    "typescript": "~5.9.3",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.3",
+    "vue-tsc": "^3.3.13",
+    "wrangler": "^4.149.0"
+  }
+}

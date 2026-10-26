@@ -1,0 +1,184 @@
+/* Cópia do kit de marca (hub-bugadao/packages/marca/tokens). Mudou lá? Copie de novo. */
+/* ============================================================
+   Bugadão · Design tokens v1.0
+   Use em qualquer projeto: <link rel="stylesheet" href="bugadao-tokens.css">
+   Tema: claro por padrão; escuro via prefers-color-scheme ou [data-theme="dark"].
+   Fontes: Sora (display), Inter (texto), JetBrains Mono (código/rótulos)
+   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+   ============================================================ */
+:root {
+  /* --- Paleta fixa (não muda com tema) --- */
+  --bgd-violet-50:  #F3F1FF;
+  --bgd-violet-100: #E8E4FF;
+  --bgd-violet-200: #D2CBFF;
+  --bgd-violet-300: #B8ADFF;
+  --bgd-violet-400: #A193FF;  /* Violeta Noite (marca no escuro) */
+  --bgd-violet-500: #8B7BFF;  /* Violeta Claro (topo do azulejo) */
+  --bgd-violet-600: #5B3DF5;  /* Violeta Bug (principal) */
+  --bgd-violet-700: #4A2BD9;
+  --bgd-violet-800: #3A21AD;
+  --bgd-violet-900: #2A1B8F;
+  --bgd-violet-950: #1A1060;
+
+  --bgd-cyan:      #22E5FF;  /* Ciano Glitch */
+  --bgd-cyan-deep: #00B3D6;
+  --bgd-magenta:      #FF3EA5;  /* Magenta Glitch */
+  --bgd-magenta-deep: #E0157F;
+
+  --bgd-ink:   #0B0B12;  /* Tinta */
+  --bgd-night: #07070C;  /* Noite */
+  --bgd-paper: #FAFAFA;  /* Papel */
+
+  --bgd-gray-50:  #F6F6F9;
+  --bgd-gray-100: #EDEDF2;
+  --bgd-gray-200: #D9D9E3;
+  --bgd-gray-300: #A3A3B6;  /* Cinza Lua */
+  --bgd-gray-400: #85859A;
+  --bgd-gray-500: #6F6F84;
+  --bgd-gray-600: #555566;  /* Névoa */
+  --bgd-gray-700: #2A2A3A;
+  --bgd-gray-800: #1A1A26;
+  --bgd-gray-900: #0E0E16;  /* Grafite */
+
+  /* Produtos: brilhante (escuro/ícone), profunda (gradiente do ícone), texto (AA sobre fundo claro) */
+  --bgd-agenda-bright: #46CDD5; --bgd-agenda-deep: #0D7D84; --bgd-agenda-text: #0B7178;
+  --bgd-md-bright:     #3FB950; --bgd-md-deep:     #1F883D; --bgd-md-text:     #1A7F37;
+  --bgd-lol-bright:    #FBBF24; --bgd-lol-deep:    #F59E0B; --bgd-lol-text:    #9A5200;
+  /* Ferramentas: sky = Ferramentas (ex-Dev Utils), rose = QR Code, coral = Converter Imagem, lima = Gerador BR, uva = Senha, menta = Notas, rubi = Comparador de Texto, fúcsia = Dashboards */
+  --bgd-sky-bright:    #6EA8FE; --bgd-sky-deep:    #2563EB; --bgd-sky-text:    #1D4ED8;
+  --bgd-rose-bright:   #F472B6; --bgd-rose-deep:   #DB2777; --bgd-rose-text:   #BE185D;
+  --bgd-coral-bright:  #FF8A65; --bgd-coral-deep:  #E8590C; --bgd-coral-text:  #C2410C;
+  --bgd-lima-bright:   #84CC16; --bgd-lima-deep:   #4D7C0F; --bgd-lima-text:   #3F6212;
+  --bgd-uva-bright:    #C084FC; --bgd-uva-deep:    #9333EA; --bgd-uva-text:    #7E22CE;
+  --bgd-menta-bright:  #34D399; --bgd-menta-deep:  #059669; --bgd-menta-text:  #047857;
+  --bgd-rubi-bright:   #F87171; --bgd-rubi-deep:   #DC2626; --bgd-rubi-text:   #B91C1C;
+  --bgd-fucsia-bright: #E879F9; --bgd-fucsia-deep: #C026D3; --bgd-fucsia-text: #A21CAF;
+
+  /* Semânticas */
+  --bgd-success: #16A34A;
+  --bgd-warning: #D97706;
+  --bgd-danger:  #E5484D;
+
+  /* Gradientes */
+  --bgd-aurora: linear-gradient(90deg, #A193FF 0%, #FF3EA5 55%, #FBBF24 100%); /* só títulos de destaque e capas */
+  --bgd-tile:   linear-gradient(135deg, #8B7BFF 0%, #5B3DF5 100%);
+
+  /* --- Tipografia --- */
+  --font-display: "Sora", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans:    "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono:    "JetBrains Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
+  /* Escala 1.25 (base 16 px) */
+  --text-xs: 0.75rem;  --text-sm: 0.875rem; --text-base: 1rem;  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;  --text-2xl: 1.563rem; --text-3xl: 1.953rem; --text-4xl: 2.441rem;
+  --text-5xl: 3.052rem; --text-6xl: 3.815rem;
+  --tracking-display: -0.035em;
+  --tracking-label: 0.08em;
+
+  /* --- Espaço, raio, movimento --- */
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 24px;
+  --space-6: 32px; --space-7: 48px; --space-8: 64px; --space-9: 96px;
+  --radius-sm: 8px; --radius-md: 12px; --radius-btn: 14px; --radius-lg: 16px; --radius-xl: 22px; --radius-pill: 999px;
+  --radius-tile: 24%; /* azulejo dos ícones */
+  --ease: cubic-bezier(.2, .8, .2, 1);
+
+  /* --- Tokens de tema (claro) --- */
+  --bg: var(--bgd-paper);
+  --bg-elev: #FFFFFF;
+  --surface: rgba(12, 12, 28, 0.025);
+  --border: rgba(12, 12, 32, 0.09);
+  --border-strong: rgba(12, 12, 32, 0.18);
+  --text: var(--bgd-ink);
+  --muted: var(--bgd-gray-600);
+  --faint: var(--bgd-gray-400);
+  --brand: var(--bgd-violet-600);
+  --brand-soft: rgba(91, 61, 245, 0.10);
+  --glitch-a: var(--bgd-cyan-deep);
+  --glitch-b: var(--bgd-magenta-deep);
+  --agenda: var(--bgd-agenda-text);
+  --md: var(--bgd-md-text);
+  --lol: var(--bgd-lol-text);
+  --dev: var(--bgd-sky-text);
+  --qr: var(--bgd-rose-text);
+  --img: var(--bgd-coral-text);
+  --gerador: var(--bgd-lima-text);
+  --senha: var(--bgd-uva-text);
+  --notas: var(--bgd-menta-text);
+  --comparar: var(--bgd-rubi-text);
+  --dashboards: var(--bgd-fucsia-text);
+  --grid: rgba(12, 12, 32, 0.07);
+  --shadow: 0 1px 2px rgba(12, 12, 32, .05), 0 8px 30px -12px rgba(12, 12, 32, .18);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: var(--bgd-night);
+    --bg-elev: var(--bgd-gray-900);
+    --surface: rgba(255, 255, 255, 0.03);
+    --border: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.18);
+    --text: #F2F2F7;
+    --muted: var(--bgd-gray-300);
+    --faint: var(--bgd-gray-500);
+    --brand: var(--bgd-violet-400);
+    --brand-soft: rgba(161, 147, 255, 0.12);
+    --glitch-a: var(--bgd-cyan);
+    --glitch-b: var(--bgd-magenta);
+    --agenda: var(--bgd-agenda-bright);
+    --md: var(--bgd-md-bright);
+    --lol: var(--bgd-lol-bright);
+    --dev: var(--bgd-sky-bright);
+    --qr: var(--bgd-rose-bright);
+    --img: var(--bgd-coral-bright);
+    --gerador: var(--bgd-lima-bright);
+    --senha: var(--bgd-uva-bright);
+    --notas: var(--bgd-menta-bright);
+    --comparar: var(--bgd-rubi-bright);
+    --dashboards: var(--bgd-fucsia-bright);
+    --grid: rgba(255, 255, 255, 0.055);
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 20px 50px -20px rgba(0, 0, 0, .7);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: var(--bgd-night);
+  --bg-elev: var(--bgd-gray-900);
+  --surface: rgba(255, 255, 255, 0.03);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.18);
+  --text: #F2F2F7;
+  --muted: var(--bgd-gray-300);
+  --faint: var(--bgd-gray-500);
+  --brand: var(--bgd-violet-400);
+  --brand-soft: rgba(161, 147, 255, 0.12);
+  --glitch-a: var(--bgd-cyan);
+  --glitch-b: var(--bgd-magenta);
+  --agenda: var(--bgd-agenda-bright);
+  --md: var(--bgd-md-bright);
+  --lol: var(--bgd-lol-bright);
+  --dev: var(--bgd-sky-bright);
+  --qr: var(--bgd-rose-bright);
+  --img: var(--bgd-coral-bright);
+  --gerador: var(--bgd-lima-bright);
+  --senha: var(--bgd-uva-bright);
+  --notas: var(--bgd-menta-bright);
+  --comparar: var(--bgd-rubi-bright);
+  --dashboards: var(--bgd-fucsia-bright);
+  --grid: rgba(255, 255, 255, 0.055);
+  --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 20px 50px -20px rgba(0, 0, 0, .7);
+  color-scheme: dark;
+}
+
+/* Cada produto troca só o acento: <html data-product="agenda|md|lol|dev|qr|img|gerador|senha|notas|comparar|dashboards"> */
+:root { --accent: var(--brand); }
+:root[data-product="agenda"] { --accent: var(--agenda); }
+:root[data-product="md"]     { --accent: var(--md); }
+:root[data-product="lol"]    { --accent: var(--lol); }
+:root[data-product="dev"]     { --accent: var(--dev); }
+:root[data-product="qr"]      { --accent: var(--qr); }
+:root[data-product="img"]     { --accent: var(--img); }
+:root[data-product="gerador"] { --accent: var(--gerador); }
+:root[data-product="senha"]   { --accent: var(--senha); }
+:root[data-product="notas"]   { --accent: var(--notas); }
+:root[data-product="comparar"] { --accent: var(--comparar); }
+:root[data-product="dashboards"] { --accent: var(--dashboards); }

@@ -1,0 +1,858 @@
+<!doctype html>
+<html lang="pt-BR" data-product="seuvoto">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Seu Voto · protótipo</title>
+<meta name="description" content="Protótipo: o que cada político fez (votos, presença, projetos e gastos), com a fonte oficial do lado, e o que cada lugar não publica." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=Sora:wght@500..800&family=JetBrains+Mono:wght@400;600&display=swap" />
+<script>
+  (function () {
+    var t = null;
+    try { t = localStorage.getItem('bugadao-tema'); } catch (e) {}
+    if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
+<style>
+/* Tokens do kit de marca (packages/marca no hub). A cor do produto (índigo) é provisória. */
+:root {
+  --bg: #FAFAFA; --bg-elev: #FFFFFF; --surface: rgba(12, 12, 28, .025);
+  --border: rgba(12, 12, 32, .09); --border-strong: rgba(12, 12, 32, .18);
+  --text: #0B0B12; --muted: #52525B; --faint: #8E8E99;
+  --accent: #4338CA; --accent-bright: #818CF8; --accent-deep: #4F46E5; --on-accent: #FFFFFF;
+  --sim: #15803D; --parcial: #B45309; --nao: #C8333A; --naosei: #6B6B76;
+  --font-display: "Sora", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #07070C; --bg-elev: #111118; --surface: rgba(255, 255, 255, .03);
+    --border: rgba(255, 255, 255, .08); --border-strong: rgba(255, 255, 255, .18);
+    --text: #F2F2F7; --muted: #C4C4CE; --faint: #7C7C88;
+    --accent: #A5B4FC; --accent-bright: #818CF8; --accent-deep: #4F46E5; --on-accent: #0B0B12;
+    --sim: #4ADE80; --parcial: #FBBF24; --nao: #F87171; --naosei: #A1A1AA;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #07070C; --bg-elev: #111118; --surface: rgba(255, 255, 255, .03);
+  --border: rgba(255, 255, 255, .08); --border-strong: rgba(255, 255, 255, .18);
+  --text: #F2F2F7; --muted: #C4C4CE; --faint: #7C7C88;
+  --accent: #A5B4FC; --accent-bright: #818CF8; --accent-deep: #4F46E5; --on-accent: #0B0B12;
+  --sim: #4ADE80; --parcial: #FBBF24; --nao: #F87171; --naosei: #A1A1AA;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 400 15px/1.55 var(--font-sans); }
+a { color: var(--accent); }
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; margin: 0; }
+button, input, select { font: inherit; color: inherit; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
+
+.topo { position: sticky; top: 0; z-index: 5; backdrop-filter: blur(10px); background: color-mix(in srgb, var(--bg) 82%, transparent); border-bottom: 1px solid var(--border); }
+.topo .wrap { display: flex; align-items: center; gap: 12px; min-height: 60px; }
+.marca { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
+.marca svg { width: 34px; height: 34px; flex: none; }
+.marca b { font: 700 1.05rem/1 var(--font-display); display: block; }
+.marca small { font: 500 .68rem/1.4 var(--font-mono); color: var(--muted); letter-spacing: .02em; }
+.sep { flex: 1; }
+.selo { font: 600 .7rem/1 var(--font-mono); padding: 6px 9px; border-radius: 999px; border: 1px dashed var(--accent); color: var(--accent); white-space: nowrap; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 38px; padding: 8px 14px; border-radius: 14px; border: 1px solid var(--border-strong); background: var(--bg-elev); cursor: pointer; font-weight: 600; font-size: .88rem; text-decoration: none; color: var(--text); }
+.btn:hover { border-color: var(--accent); }
+.btn-go { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn-sm { min-height: 32px; padding: 5px 11px; font-size: .8rem; border-radius: 11px; }
+.btn:disabled { opacity: .5; cursor: default; }
+.icone { width: 38px; padding: 0; }
+
+.hero { padding: 40px 0 18px; }
+.hero h1 { font-size: clamp(1.7rem, 4.6vw, 2.6rem); letter-spacing: -.02em; max-width: 20ch; }
+.hero h1 em { font-style: normal; color: var(--accent); }
+.hero p { color: var(--muted); max-width: 62ch; margin: 12px 0 0; font-size: 1.02rem; }
+
+.panel { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 22px; padding: 22px; margin: 16px 0; }
+.panel > h2 { font-size: 1.2rem; display: flex; align-items: baseline; gap: 10px; }
+.panel > h2 .n { font: 700 .78rem/1 var(--font-mono); color: var(--accent); }
+.panel > p.sub { color: var(--muted); margin: 6px 0 16px; font-size: .92rem; }
+.hint { color: var(--muted); font-size: .82rem; }
+.mono { font-family: var(--font-mono); }
+
+.onde { display: grid; gap: 12px; grid-template-columns: 1fr; }
+@media (min-width: 700px) { .onde { grid-template-columns: 220px 1fr; } }
+label.campo { display: grid; gap: 6px; font-weight: 600; font-size: .85rem; }
+select, input[type="text"], input[inputmode="numeric"] { width: 100%; min-height: 42px; padding: 8px 12px; border-radius: 12px; border: 1px solid var(--border-strong); background: var(--bg); }
+select:focus, input:focus, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.legenda { display: flex; flex-wrap: wrap; gap: 8px 14px; margin: 14px 0 4px; }
+.st { display: inline-flex; align-items: center; gap: 6px; font: 600 .74rem/1.2 var(--font-mono); padding: 4px 8px; border-radius: 999px; white-space: nowrap; border: 1px solid currentColor; }
+.st::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.st.sim { color: var(--sim); } .st.parcial { color: var(--parcial); } .st.nao { color: var(--nao); }
+.st.naosei { color: var(--naosei); border-style: dashed; } .st.na { color: var(--faint); border-style: dotted; }
+.st.na::before { background: transparent; border: 1px solid currentColor; }
+
+.cargos { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); }
+.cargo { border: 1px solid var(--border); border-radius: 16px; padding: 14px; background: var(--surface); display: grid; gap: 8px; align-content: start; }
+.cargo h3 { font-size: 1rem; }
+.cargo .casa { font-size: .8rem; color: var(--muted); margin-top: -4px; }
+.item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; align-items: center; padding: 7px 0; border-top: 1px solid var(--border); }
+.item b { font-weight: 600; font-size: .88rem; }
+.item .nota { grid-column: 1 / -1; font-size: .78rem; color: var(--muted); }
+.cargo .acoes { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 4px; }
+
+.abas { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.aba { border: 1px solid var(--border-strong); background: transparent; border-radius: 999px; padding: 7px 13px; cursor: pointer; font-weight: 600; font-size: .85rem; }
+.aba[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.aba .q { font-family: var(--font-mono); font-size: .72rem; opacity: .8; margin-left: 4px; }
+.pessoas { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); }
+.pessoa { display: flex; align-items: center; gap: 10px; padding: 10px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); cursor: pointer; text-align: left; width: 100%; }
+.pessoa:hover { border-color: var(--accent); }
+.foto { width: 44px; height: 44px; border-radius: 12px; object-fit: cover; background: var(--border); flex: none; }
+.pessoa b { display: block; font-size: .88rem; line-height: 1.25; }
+.pessoa span { font: 500 .72rem/1.3 var(--font-mono); color: var(--muted); }
+.vazio { padding: 18px; border: 1px dashed var(--border-strong); border-radius: 14px; color: var(--muted); }
+.vazio strong { color: var(--text); }
+.carregando { color: var(--muted); font-size: .88rem; }
+.carregando::after { content: " ⋯"; animation: pisca 1s infinite; }
+@keyframes pisca { 50% { opacity: .3; } }
+
+dialog { border: 1px solid var(--border-strong); border-radius: 22px; padding: 0; width: min(780px, calc(100vw - 24px)); max-height: calc(100vh - 24px); background: var(--bg-elev); color: var(--text); }
+dialog::backdrop { background: rgba(5, 5, 12, .55); }
+.ficha-topo { display: flex; gap: 14px; align-items: center; padding: 18px 18px 14px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg-elev); z-index: 1; }
+.ficha-topo .foto { width: 64px; height: 64px; border-radius: 16px; }
+.ficha-topo h3 { font-size: 1.2rem; }
+.ficha-topo .quem { font: 500 .78rem/1.4 var(--font-mono); color: var(--muted); }
+.ficha-corpo { padding: 6px 18px 18px; display: grid; gap: 10px; }
+.bloco { border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; }
+.bloco-topo { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.bloco-topo h4 { margin: 0; font: 700 .95rem/1.3 var(--font-display); flex: 1; min-width: 140px; }
+.bloco .fonte { font-size: .75rem; color: var(--faint); margin-top: 8px; }
+.bloco .fonte a { color: var(--muted); }
+.numero { font: 700 1.5rem/1.1 var(--font-display); }
+.numero small { font: 500 .8rem/1.3 var(--font-sans); color: var(--muted); display: block; margin-top: 2px; }
+.contas { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.conta { font: 600 .76rem/1 var(--font-mono); padding: 6px 8px; border-radius: 9px; background: var(--surface); border: 1px solid var(--border); }
+.lista { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 4px; }
+.lista li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; font-size: .82rem; padding: 5px 0; border-top: 1px solid var(--border); }
+.lista li span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.voto { font: 700 .72rem/1.4 var(--font-mono); }
+.voto.sim { color: var(--sim); } .voto.nao { color: var(--nao); } .voto.outro { color: var(--muted); }
+.ficha-pe { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 18px 18px; }
+
+.cartao-area { display: grid; gap: 18px; grid-template-columns: 1fr; }
+@media (min-width: 900px) { .cartao-area { grid-template-columns: 1fr 360px; } }
+.linhas { display: grid; gap: 8px; }
+.grupo-t { font: 700 .78rem/1 var(--font-mono); color: var(--muted); margin: 10px 0 2px; text-transform: uppercase; letter-spacing: .04em; }
+.linha { display: grid; grid-template-columns: 130px 92px minmax(0, 1fr); gap: 8px; align-items: center; }
+.linha .cg { font-weight: 600; font-size: .85rem; }
+@media (max-width: 560px) { .linha { grid-template-columns: 1fr 92px; } .linha .nome { grid-column: 1 / -1; } }
+.cola { background: #fff; color: #0B0B12; border-radius: 18px; padding: 18px; border: 2px solid #0B0B12; font-family: var(--font-sans); align-self: start; }
+.cola h3 { font: 800 1.05rem/1.2 var(--font-display); display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.cola h3 small { font: 500 .62rem/1 var(--font-mono); color: #52525B; }
+.cola .g { font: 700 .62rem/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: #52525B; margin: 12px 0 4px; }
+.cola .r { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; padding: 7px 0; border-top: 1px dashed #c9c9d1; }
+.cola .r .c { font-size: .72rem; color: #52525B; }
+.cola .r .num { grid-row: span 2; align-self: center; font: 700 1.55rem/1 var(--font-mono); letter-spacing: .08em; }
+.cola .r .nm { font-weight: 600; font-size: .85rem; }
+.cola .r .rs { grid-column: 1 / -1; font-size: .7rem; color: #3F3F46; }
+.cola .pe { font: 500 .6rem/1.4 var(--font-mono); color: #71717A; margin-top: 10px; }
+
+.rodape { padding: 26px 0 40px; color: var(--muted); font-size: .82rem; }
+.rodape p { margin: 6px 0; max-width: 80ch; }
+
+@media print {
+  body { background: #fff; }
+  body * { visibility: hidden; }
+  #cola, #cola * { visibility: visible; }
+  #cola { position: absolute; left: 0; top: 0; width: 9cm; border-width: 1px; }
+}
+</style>
+</head>
+<body>
+
+<header class="topo">
+  <div class="wrap">
+    <a class="marca" href="#">
+      <svg viewBox="0 0 100 100" aria-hidden="true"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#818CF8"/><stop offset="1" stop-color="#4F46E5"/></linearGradient></defs><rect width="100" height="100" rx="24" fill="url(#g)"/><path d="M27 52l14 14 32-34" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span><b>Seu Voto</b><small>um projeto bugadão</small></span>
+    </a>
+    <span class="sep"></span>
+    <span class="selo">protótipo</span>
+    <button class="btn icone" id="tema" type="button" title="Trocar tema" aria-label="Trocar tema">◐</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <h1>O que cada político fez, <em>com a fonte do lado</em>.</h1>
+    <p>Votos, presença, projetos e gastos de quem representa você, direto das fontes oficiais. Quando um lugar não publica algum dado, a gente diz que não publica.</p>
+  </section>
+
+  <section class="panel" aria-labelledby="t-onde">
+    <h2 id="t-onde"><span class="n">01</span> Onde você vota</h2>
+    <p class="sub">Cada estado e cada câmara publica uma coisa diferente. Escolha o seu lugar.</p>
+    <div class="onde">
+      <label class="campo">Estado <select id="uf"></select></label>
+      <label class="campo">Cidade <select id="cidade"></select></label>
+    </div>
+    <p class="hint" id="cidade-info"></p>
+  </section>
+
+  <section class="panel" aria-labelledby="t-cargos">
+    <h2 id="t-cargos"><span class="n">02</span> O que dá para ver em cada cargo</h2>
+    <p class="sub" id="cargos-sub"></p>
+    <div class="legenda" aria-label="Legenda">
+      <span class="st sim">Tem</span><span class="st parcial">Em parte</span><span class="st nao">Não publica</span><span class="st naosei">Não deu para verificar</span><span class="st na">Não se aplica</span>
+    </div>
+    <p class="hint">"Não publica" quer dizer: não achamos em formato aberto no site da casa (conferido em 23/10/2026).</p>
+    <div class="cargos" id="cargos"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="t-quem">
+    <h2 id="t-quem"><span class="n">03</span> Quem representa você</h2>
+    <p class="sub">Lista ao vivo, das APIs oficiais. Toque num nome para ver a ficha.</p>
+    <div class="abas" role="tablist" id="abas"></div>
+    <div id="lista"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="t-cola">
+    <h2 id="t-cola"><span class="n">04</span> Seu cartãozinho</h2>
+    <p class="sub">A cola para levar na votação. Celular não entra na cabine; papel pode. Fica só no seu navegador.</p>
+    <div class="cartao-area">
+      <div class="linhas" id="linhas"></div>
+      <div>
+        <div class="cola" id="cola"></div>
+        <div class="btn-row" style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+          <button class="btn btn-go" type="button" id="imprimir">Imprimir cartão</button>
+          <button class="btn" type="button" id="limpar-cola">Limpar</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="rodape wrap">
+  <p><strong>Seu Voto</strong> · um projeto bugadão · protótipo de 23/10/2026.</p>
+  <p>Só mostra dados das fontes oficiais, sempre com o link. Não dá nota, não faz ranking e não recomenda candidato.</p>
+  <p>Fontes: Câmara dos Deputados, Senado Federal, SAPL/Interlegis (assembleias e câmaras), TSE, Portal da Transparência e Querido Diário (Open Knowledge Brasil).</p>
+</footer>
+
+<dialog id="ficha" aria-labelledby="ficha-nome"></dialog>
+
+<script>
+/* ======================================================================
+   Dados do levantamento de 23/10/2026 (docs/cobertura.md)
+   ====================================================================== */
+const DIA = '23/10/2026'
+const LEG_CAMARA = 57 // legislatura da Câmara até 31/01/2027
+const INICIO_LEG = '2023-02-01'
+
+const UFS = [
+  ['AC', 'Acre', 'Rio Branco'], ['AL', 'Alagoas', 'Maceió'], ['AP', 'Amapá', 'Macapá'], ['AM', 'Amazonas', 'Manaus'],
+  ['BA', 'Bahia', 'Salvador'], ['CE', 'Ceará', 'Fortaleza'], ['DF', 'Distrito Federal', 'Brasília'], ['ES', 'Espírito Santo', 'Vitória'],
+  ['GO', 'Goiás', 'Goiânia'], ['MA', 'Maranhão', 'São Luís'], ['MT', 'Mato Grosso', 'Cuiabá'], ['MS', 'Mato Grosso do Sul', 'Campo Grande'],
+  ['MG', 'Minas Gerais', 'Belo Horizonte'], ['PA', 'Pará', 'Belém'], ['PB', 'Paraíba', 'João Pessoa'], ['PR', 'Paraná', 'Curitiba'],
+  ['PE', 'Pernambuco', 'Recife'], ['PI', 'Piauí', 'Teresina'], ['RJ', 'Rio de Janeiro', 'Rio de Janeiro'], ['RN', 'Rio Grande do Norte', 'Natal'],
+  ['RS', 'Rio Grande do Sul', 'Porto Alegre'], ['RO', 'Rondônia', 'Porto Velho'], ['RR', 'Roraima', 'Boa Vista'], ['SC', 'Santa Catarina', 'Florianópolis'],
+  ['SP', 'São Paulo', 'São Paulo'], ['SE', 'Sergipe', 'Aracaju'], ['TO', 'Tocantins', 'Palmas'],
+].map(([uf, nome, capital]) => ({ uf, nome, capital }))
+
+// Assembleias: [sigla, acesso, votos, presença, projetos, gastos, nota, url, base do SAPL]
+const A = (sigla, acesso, votos, presenca, projetos, gastos, nota, url, sapl) => ({ sigla, acesso, votos, presenca, projetos, gastos, nota, url, sapl })
+const ASSEMBLEIAS = {
+  AC: A('ALEAC', 'SAPL (API aberta)', 'sim', 'sim', 'sim', 'nao', 'Verba indenizatória só com a regulamentação, sem os valores por deputado.', 'https://sapl.al.ac.leg.br/api/', 'https://sapl.al.ac.leg.br'),
+  AL: A('ALE-AL', 'SAPL (API aberta)', 'parcial', 'nao', 'sim', 'nao', 'Os votos no sistema são de 2015 a 2018; a presença está vazia.', 'https://sapl.al.al.leg.br/api/', 'https://sapl.al.al.leg.br'),
+  AP: A('ALAP', 'site fora do ar', 'naosei', 'naosei', 'naosei', 'naosei', 'O site da Assembleia não respondeu no dia da verificação.', 'https://www.al.ap.leg.br'),
+  AM: A('ALEAM', 'SAPL (API aberta)', 'parcial', 'naosei', 'sim', 'parcial', 'Há 133 mil votos no sistema, mas a amostra era de 2018: falta ver se está em dia. A cota só aparece em página.', 'https://sapl.al.am.leg.br/api/', 'https://sapl.al.am.leg.br'),
+  BA: A('ALBA', 'API (NoPaper, não testada)', 'nao', 'parcial', 'parcial', 'sim', 'Verba indenizatória por deputado com exportação para Excel. Frequência só por link externo.', 'https://www.al.ba.gov.br/transparencia/verbas-idenizatorias'),
+  CE: A('ALECE', 'API própria', 'parcial', 'nao', 'naosei', 'sim', 'Votações nominais em PDF/XLSX por matéria. Verba de desempenho parlamentar em CSV.', 'https://transparencia.al.ce.gov.br/api'),
+  DF: A('CLDF', 'portal de dados (CKAN)', 'parcial', 'nao', 'parcial', 'sim', 'Painel de votação e resultados legislativos em página. Verbas indenizatórias no portal de dados.', 'https://dados.cl.df.gov.br/'),
+  ES: A('ALES', 'API + planilhas', 'nao', 'parcial', 'naosei', 'sim', 'A frequência publicada é só a lista de ausentes por mês. Cotas por gabinete com exportação.', 'https://www.al.es.gov.br/Transparencia/DadosAbertos'),
+  GO: A('ALEGO', 'nada encontrado', 'nao', 'nao', 'nao', 'naosei', 'O portal não tem área de dados abertos nem API; a transparência só mostrou o aviso de cookies.', 'https://portal.al.go.leg.br/'),
+  MA: A('ALEMA', 'página e PDF', 'parcial', 'parcial', 'naosei', 'parcial', 'A própria página diz que a API "ainda não é atendida". O SAPL da casa não abriu.', 'https://sistemas.al.ma.leg.br/transparencia/index.html'),
+  MT: A('ALMT', 'API bloqueada (403)', 'nao', 'nao', 'parcial', 'nao', 'Votação nominal só em PEC. Projetos em página, com filtro por autor.', 'https://www.al.mt.gov.br/proposicao'),
+  MS: A('ALEMS', 'CSV de gastos', 'nao', 'nao', 'naosei', 'sim', 'Cota (CEAP) em CSV desde 2012.', 'https://transparencia2.al.ms.gov.br/ceap'),
+  MG: A('ALMG', 'API v2 + CSV', 'naosei', 'naosei', 'sim', 'sim', 'Projetos com autores e verbas indenizatórias por deputado em CSV. Votos e presença: falta conferir na documentação.', 'https://dadosabertos.almg.gov.br/'),
+  PA: A('ALEPA', 'página e PDF', 'parcial', 'nao', 'nao', 'naosei', 'Votações nominais em DOC/PDF. A página de proposições deu erro.', 'https://www.alepa.pa.gov.br/Home/Page/VotacoesNominais'),
+  PB: A('ALPB', 'SAPL (API aberta)', 'sim', 'sim', 'sim', 'parcial', 'Há registros de teste de 2018 misturados.', 'https://sapl.al.pb.leg.br/api/', 'https://sapl.al.pb.leg.br'),
+  PR: A('ALEP', 'API própria', 'parcial', 'parcial', 'sim', 'naosei', 'Projetos filtram por autor e tipo (inclui indicação). Votos e presença só em página.', 'https://transparencia.assembleia.pr.leg.br/servicos/dados-abertos'),
+  PE: A('ALEPE', 'API (só cadastro)', 'nao', 'nao', 'naosei', 'nao', 'A API tem só o cadastro dos parlamentares.', 'https://dadosabertos.alepe.pe.gov.br/'),
+  PI: A('ALEPI', 'SAPL (API aberta)', 'sim', 'sim', 'sim', 'sim', 'A mais completa das Assembleias. Verba indenizatória em CSV.', 'https://sapl.al.pi.leg.br/api/', 'https://sapl.al.pi.leg.br'),
+  RJ: A('ALERJ', 'só página e PDF', 'nao', 'naosei', 'nao', 'nao', 'A lista de presença fica num sistema externo, que não abriu.', 'https://transparencia.alerj.rj.gov.br'),
+  RN: A('ALRN', 'página', 'naosei', 'naosei', 'naosei', 'parcial', 'Sem SAPL e sem API.', 'https://transparencia.al.rn.leg.br/'),
+  RS: A('ALRS', 'portal de dados fora do ar', 'parcial', 'naosei', 'parcial', 'naosei', 'Pela busca, há arquivos de votação de 2010 a 2022, mas o portal de dados não abriu.', 'https://ww4.al.rs.gov.br'),
+  RO: A('ALERO', 'SAPL (API aberta)', 'sim', 'sim', 'sim', 'nao', 'Gastos por deputado não aparecem na transparência.', 'https://sapl.al.ro.leg.br/api/', 'https://sapl.al.ro.leg.br'),
+  RR: A('ALE-RR', 'SAPL (API aberta)', 'nao', 'parcial', 'sim', 'naosei', 'O sistema não tem votos registrados e só 24 presenças.', 'https://sapl.al.rr.leg.br/api/', 'https://sapl.al.rr.leg.br'),
+  SC: A('ALESC', 'CSV + página', 'nao', 'parcial', 'naosei', 'sim', 'Presença por sessão em página, separando ausência justificada. Gastos dos gabinetes em CSV desde 2011.', 'https://transparencia.alesc.sc.gov.br/legislativo'),
+  SP: A('ALESP', 'API + XML', 'nao', 'sim', 'parcial', 'sim', 'Votos só das comissões, não do plenário.', 'https://www.al.sp.gov.br/dados-abertos/'),
+  SE: A('ALESE', 'página antiga', 'nao', 'nao', 'parcial', 'nao', 'Proposições por autor só em página.', 'https://aleselegis.al.se.leg.br/spl/parlamentares.aspx'),
+  TO: A('ALETO', 'SAPL (API aberta)', 'nao', 'naosei', 'sim', 'parcial', 'O sistema não tem votos registrados.', 'https://sapl.al.to.leg.br/api/', 'https://sapl.al.to.leg.br'),
+}
+
+// Câmaras das capitais: [acesso, votos, presença, projetos, nota, url, base do SAPL]
+const C = (acesso, votos, presenca, projetos, nota, url, sapl) => ({ acesso, votos, presenca, projetos, nota, url, sapl })
+const CAMARAS = {
+  AC: C('SAPL (API aberta)', 'sim', 'sim', 'sim', '41 mil votos registrados.', 'https://sapl.riobranco.ac.leg.br/api/', 'https://sapl.riobranco.ac.leg.br'),
+  AL: C('página', 'naosei', 'parcial', 'parcial', 'Frequência e tramitação só em página.', 'https://www.maceio.al.leg.br'),
+  AP: C('não abriu', 'naosei', 'naosei', 'naosei', 'A página veio vazia na leitura.', 'https://www.macapa.ap.leg.br'),
+  AM: C('SAPL (API aberta)', 'naosei', 'naosei', 'naosei', 'Só a lista de vereadores foi conferida.', 'https://sapl.cmm.am.gov.br/api/', 'https://sapl.cmm.am.gov.br'),
+  BA: C('página', 'naosei', 'parcial', 'parcial', 'Frequência e produção legislativa em sistema próprio, só em página.', 'https://www.cms.ba.gov.br'),
+  CE: C('não abriu', 'naosei', 'naosei', 'naosei', 'A página veio vazia na leitura.', 'https://www.cmfor.ce.gov.br'),
+  ES: C('bloqueou a leitura', 'naosei', 'naosei', 'naosei', 'O site recusou o acesso automático (403).', 'https://www.cmv.es.gov.br'),
+  GO: C('página', 'naosei', 'naosei', 'naosei', 'O SAPL da câmara respondeu com erro (503).', 'https://www.goiania.go.leg.br'),
+  MA: C('não abriu', 'naosei', 'naosei', 'naosei', 'O endereço não respondeu.', 'https://www.saoluis.ma.leg.br'),
+  MT: C('página (NoPaper)', 'naosei', 'parcial', 'parcial', 'Ficha de presença e proposições em sistema próprio, só em página.', 'https://legislativo.camaracuiaba.mt.gov.br'),
+  MS: C('bloqueou a leitura', 'naosei', 'naosei', 'naosei', 'O site pede verificação de robô.', 'https://www.camara.ms.gov.br'),
+  MG: C('página', 'nao', 'parcial', 'naosei', 'Presença mensal por vereador desde 2009, só em página.', 'https://www.cmbh.mg.gov.br/transparencia/vereadores/presenca-mensal-consolidada'),
+  PA: C('página', 'naosei', 'naosei', 'parcial', 'Busca de proposições por proponente, só em página.', 'https://www.cmb.pa.gov.br'),
+  PB: C('SAPL (API aberta)', 'sim', 'sim', 'sim', '204 mil matérias no sistema.', 'https://sapl.joaopessoa.pb.leg.br/api/', 'https://sapl.joaopessoa.pb.leg.br'),
+  PR: C('bloqueou a leitura', 'naosei', 'naosei', 'naosei', 'O site recusou o acesso automático (403).', 'https://www.cmc.pr.gov.br'),
+  PE: C('dados abertos (Plone)', 'nao', 'parcial', 'parcial', 'Vereadores, proposições e sessões listados nos dados abertos; frequência em página.', 'https://transparencia.recife.pe.leg.br/institucional/dados-abertos'),
+  PI: C('página', 'naosei', 'naosei', 'naosei', 'Produção legislativa em sistema de terceiros.', 'https://www.teresina.pi.leg.br'),
+  RJ: C('não abriu', 'naosei', 'naosei', 'naosei', 'O site deu erro de certificado.', 'https://www.camara.rio'),
+  RN: C('SAPL (API aberta)', 'parcial', 'sim', 'sim', 'Só 617 votos registrados no sistema.', 'https://sapl.natal.rn.leg.br/api/', 'https://sapl.natal.rn.leg.br'),
+  RS: C('página', 'parcial', 'nao', 'naosei', 'Cerca de 9.900 votações em página, com as nominais marcadas.', 'https://votacoes.camarapoa.rs.gov.br'),
+  RO: C('SAPL (API aberta)', 'sim', 'sim', 'sim', '79 mil votos registrados.', 'https://sapl.portovelho.ro.leg.br/api/', 'https://sapl.portovelho.ro.leg.br'),
+  RR: C('SAPL (API aberta)', 'nao', 'sim', 'sim', 'O sistema não tem votos registrados.', 'https://sapl.boavista.rr.leg.br/api/', 'https://sapl.boavista.rr.leg.br'),
+  SC: C('bloqueou a leitura', 'naosei', 'naosei', 'naosei', 'O site pede verificação de robô.', 'https://www.cmf.sc.gov.br'),
+  SP: C('webservice próprio', 'nao', 'nao', 'sim', 'Projetos com autores e subscritores; votos e presença não estão no webservice.', 'https://www.saopaulo.sp.leg.br/transparencia/dados-abertos/'),
+  SE: C('JSON anunciado', 'parcial', 'parcial', 'parcial', 'Votação nominal e presença em página; JSON anunciado, não conferido.', 'https://www.aracaju.se.leg.br/transparencia/dados-abertos'),
+  TO: C('SAPL (API aberta)', 'naosei', 'naosei', 'naosei', 'Os endereços existem; os dados não foram conferidos.', 'https://sapl.palmas.to.leg.br/api/', 'https://sapl.palmas.to.leg.br'),
+}
+
+const ROTULO = { sim: 'Tem', parcial: 'Em parte', nao: 'Não publica', naosei: 'Não deu para verificar', na: 'Não se aplica' }
+
+/* ======================================================================
+   Utilidades
+   ====================================================================== */
+const $ = (s) => document.querySelector(s)
+const esc = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
+const chip = (st) => `<span class="st ${st}">${ROTULO[st]}</span>`
+const num = (n) => Number(n).toLocaleString('pt-BR')
+const reais = (n) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })
+const iso = (d) => d.toISOString().slice(0, 10)
+const HOJE = new Date()
+const ANO = HOJE.getFullYear()
+const https = (u) => (u || '').replace(/^http:\/\//, 'https://')
+const slug = (t) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '')
+const guardar = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)) } catch (e) {} }
+const ler = (k, padrao) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : padrao } catch (e) { return padrao } }
+
+async function pegar(url) {
+  const r = await fetch(url, { headers: { Accept: 'application/json' } })
+  if (!r.ok) throw new Error(`a fonte respondeu ${r.status}`)
+  const total = r.headers.get('X-Total-Count')
+  return { json: await r.json(), total: total == null ? null : Number(total) }
+}
+const FOTO_VAZIA = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><rect width="40" height="40" fill="#8885"/><circle cx="20" cy="15" r="7" fill="#fff8"/><path d="M6 38c2-9 8-13 14-13s12 4 14 13" fill="#fff8"/></svg>')
+const img = (src, cls = 'foto') => `<img class="${cls}" src="${esc(src || FOTO_VAZIA)}" alt="" loading="lazy" onerror="this.src='${FOTO_VAZIA}'">`
+
+/* ---------- SAPL (mesma API em todas as casas que usam o sistema do Interlegis) ---------- */
+const saplCache = new Map()
+async function saplPagina(base, caminho, extra = '') {
+  const sep = caminho.includes('?') ? '&' : '?'
+  return (await pegar(`${base}/api/${caminho}${sep}page_size=100${extra}`)).json
+}
+async function saplTodas(base, caminho, maxPaginas = 10) {
+  const itens = []
+  let total = 0
+  for (let p = 1; p <= maxPaginas; p++) {
+    const j = await saplPagina(base, caminho, `&page=${p}`)
+    itens.push(...j.results)
+    total = j.pagination.total_entries
+    if (!j.pagination.next_page) return { itens, total, completo: true }
+  }
+  return { itens, total, completo: false }
+}
+async function saplTotal(base, caminho) {
+  const sep = caminho.includes('?') ? '&' : '?'
+  return (await pegar(`${base}/api/${caminho}${sep}page_size=1`)).json.pagination.total_entries
+}
+async function saplLegislatura(base) {
+  if (saplCache.has(base + 'leg')) return saplCache.get(base + 'leg')
+  const { itens } = await saplTodas(base, 'parlamentares/legislatura/', 2)
+  const hoje = iso(HOJE)
+  const leg = itens.find((l) => l.data_inicio <= hoje && (!l.data_fim || l.data_fim >= hoje)) || itens[0]
+  saplCache.set(base + 'leg', leg)
+  return leg
+}
+
+/* ======================================================================
+   01 · Onde você vota
+   ====================================================================== */
+let cidades = null // do Querido Diário: as 5.570, com o nível de cobertura do Diário Oficial
+const estado = ler('vsv-onde', { uf: 'PI', cidade: null })
+const ufSel = $('#uf'), cidSel = $('#cidade')
+ufSel.innerHTML = UFS.map((u) => `<option value="${u.uf}">${u.nome}</option>`).join('')
+ufSel.value = estado.uf
+
+async function carregarCidades() {
+  try {
+    const { json } = await pegar('https://api.queridodiario.org.br/cities')
+    cidades = json.cities
+  } catch (e) { cidades = [] }
+}
+function preencherCidades() {
+  const u = UFS.find((x) => x.uf === ufSel.value)
+  if (u.uf === 'DF') {
+    cidSel.innerHTML = '<option value="">Brasília (o DF não tem municípios)</option>'
+    cidSel.disabled = true
+    return
+  }
+  cidSel.disabled = false
+  const doEstado = (cidades || []).filter((c) => c.state_code === u.uf).sort((a, b) => a.territory_name.localeCompare(b.territory_name, 'pt-BR'))
+  const lista = doEstado.length ? doEstado : [{ territory_id: '', territory_name: u.capital, level: null }]
+  cidSel.innerHTML = lista.map((c) => `<option value="${esc(c.territory_id)}">${esc(c.territory_name)}${c.territory_name === u.capital ? ' (capital)' : ''}</option>`).join('')
+  const escolhida = lista.find((c) => c.territory_id === estado.cidade) || lista.find((c) => c.territory_name === u.capital)
+  cidSel.value = escolhida?.territory_id ?? ''
+}
+function cidadeAtual() {
+  const u = UFS.find((x) => x.uf === ufSel.value)
+  if (u.uf === 'DF') return null
+  const c = (cidades || []).find((x) => x.territory_id === cidSel.value)
+  return c || { territory_id: '', territory_name: u.capital, level: null }
+}
+
+/* ---------- Câmara do interior: procura um SAPL e mede o que tem ---------- */
+const camarasMedidas = new Map()
+async function procurarSapl(cidade, uf) {
+  const base = `https://sapl.${slug(cidade.territory_name)}.${uf.toLowerCase()}.leg.br`
+  const chave = cidade.territory_id || cidade.territory_name
+  camarasMedidas.set(chave, { estado: 'procurando', base })
+  renderCargos()
+  try {
+    await saplLegislatura(base)
+    const [votos, presencas, materias] = await Promise.all([
+      saplTotal(base, 'sessao/votoparlamentar/'), saplTotal(base, 'sessao/sessaoplenariapresenca/'), saplTotal(base, 'materia/materialegislativa/'),
+    ])
+    camarasMedidas.set(chave, { estado: 'achou', base, votos, presencas, materias })
+  } catch (e) {
+    camarasMedidas.set(chave, { estado: 'nao achou', base })
+  }
+  renderCargos()
+  renderAbas()
+}
+function camaraDaCidade() {
+  const u = UFS.find((x) => x.uf === ufSel.value)
+  const cid = cidadeAtual()
+  if (!cid) return null
+  if (cid.territory_name === u.capital) return { ...CAMARAS[u.uf], nome: `Câmara Municipal de ${cid.territory_name}`, capital: true }
+  const m = camarasMedidas.get(cid.territory_id || cid.territory_name)
+  const nome = `Câmara Municipal de ${cid.territory_name}`
+  if (m?.estado === 'achou') {
+    const st = (n) => (n > 0 ? 'sim' : 'nao')
+    return { nome, acesso: 'SAPL (API aberta), achado agora', votos: st(m.votos), presenca: st(m.presencas), projetos: st(m.materias),
+      nota: `No sistema: ${num(m.votos)} votos, ${num(m.presencas)} presenças e ${num(m.materias)} matérias.`, url: `${m.base}/api/`, sapl: m.base }
+  }
+  return { nome, acesso: m?.estado === 'procurando' ? 'procurando…' : m?.estado === 'nao achou' ? 'sem SAPL nesse endereço' : 'ainda não verificada',
+    votos: 'naosei', presenca: 'naosei', projetos: 'naosei', interior: true, medida: m,
+    nota: m?.estado === 'nao achou'
+      ? `Não há SAPL em ${m.base.replace('https://', '')}. A câmara pode usar outro sistema ou outro endereço; a versão final procura pelo diretório do Interlegis.`
+      : 'Ainda não está na lista conferida. A versão final confere todas as câmaras sozinha.' }
+}
+
+/* ======================================================================
+   02 · Cargos
+   ====================================================================== */
+const item = (nome, st, nota) => `<div class="item"><b>${esc(nome)}</b>${chip(st)}${nota ? `<span class="nota">${nota}</span>` : ''}</div>`
+const naoPublica = (casa, coisa) => `${esc(casa)} não publica ${coisa} em formato aberto (conferido em ${DIA}).`
+const TSE = item('Ficha do candidato (TSE)', 'sim', 'Número, partido, bens, doações recebidas e gastos de campanha.')
+
+function itensLegislativo(casa, d, extras = '') {
+  const nota = (st, coisa, padrao) => (st === 'nao' ? naoPublica(casa, coisa) : st === 'naosei' ? 'O site não deixou conferir.' : padrao || '')
+  return TSE +
+    item('Votos', d.votos, nota(d.votos, 'os votos de cada parlamentar')) +
+    item('Presença e faltas', d.presenca, nota(d.presenca, 'a presença de cada parlamentar')) +
+    item('Projetos e pedidos', d.projetos, nota(d.projetos, 'os projetos por autor')) +
+    (d.gastos ? item('Gastos do gabinete', d.gastos, nota(d.gastos, 'os gastos por parlamentar')) : '') + extras
+}
+
+function renderCargos() {
+  const u = UFS.find((x) => x.uf === ufSel.value)
+  const cid = cidadeAtual()
+  const al = ASSEMBLEIAS[u.uf]
+  const cam = camaraDaCidade()
+  const card = (titulo, casa, corpo, acoes = '') => `<article class="cargo"><h3>${titulo}</h3>${casa ? `<div class="casa">${casa}</div>` : ''}${corpo}${acoes ? `<div class="acoes">${acoes}</div>` : ''}</article>`
+  const fonte = (url, rot = 'Ver a fonte') => `<a class="btn btn-sm" href="${esc(url)}" target="_blank" rel="noopener">${rot} ↗</a>`
+  const federal = (notaPresenca) => item('Votos', 'sim') + item('Presença e faltas', 'sim', notaPresenca) + item('Projetos e pedidos', 'sim') + item('Gastos do gabinete', 'sim') + item('Emendas (para onde mandou dinheiro)', 'sim', 'Portal da Transparência.')
+
+  let dq = 'naosei', dqNota = 'Não deu para consultar o Querido Diário agora.'
+  if (cid && cid.level != null) {
+    if (cid.level === '3') { dq = 'sim'; dqNota = `No Querido Diário desde ${new Date(cid.availability_date + 'T12:00').toLocaleDateString('pt-BR')}.` }
+    else if (cid.level === '1' || cid.level === '2') { dq = 'parcial'; dqNota = 'No Querido Diário, ainda sem o texto completo.' }
+    else { dq = 'nao'; dqNota = `O Querido Diário ainda não cobre ${esc(cid.territory_name)}.` }
+  }
+
+  const cards = [
+    card('Presidente', 'Executivo federal', TSE + item('Votos', 'na', 'Cargo executivo não vota.') + item('Proposta de governo', 'sim', 'TSE, em PDF.') + item('Agenda oficial', 'sim', 'e-Agendas, da CGU.') + item('Diário Oficial da União', 'sim')),
+    card('Senador', `Senado Federal · 3 por estado`, TSE + federal('Com o motivo de cada ausência (licença, missão, falta).'), fonte('https://legis.senado.leg.br/dadosabertos/docs/')),
+    card('Deputado federal', 'Câmara dos Deputados', TSE + federal('Presença por sessão; a falta justificada não vem separada.'), fonte('https://dadosabertos.camara.leg.br/')),
+    card('Governador', `Executivo estadual · ${esc(u.nome)}`, TSE + item('Votos', 'na', 'Cargo executivo não vota.') + item('Proposta de governo', 'sim', 'TSE, em PDF.') + item('Contas do estado', 'naosei', 'Tesouro Nacional (Siconfi): ainda não testado.')),
+    card(u.uf === 'DF' ? 'Deputado distrital' : 'Deputado estadual', `${al.sigla} · ${esc(al.acesso)}`, itensLegislativo(al.sigla === 'CLDF' ? 'A CLDF' : `A ${al.sigla}`, al, al.nota ? `<p class="hint" style="margin:4px 0 0">${esc(al.nota)}</p>` : ''), fonte(al.url)),
+  ]
+  if (u.uf === 'DF') {
+    cards.push(card('Prefeito e vereador', 'Não existem no DF', item('Prefeito', 'na', 'Quem administra o DF é o governador.') + item('Vereador', 'na', 'Quem faz as leis do DF é a Câmara Legislativa (deputados distritais).')))
+  } else {
+    cards.push(card('Prefeito', `Executivo municipal · ${esc(cid.territory_name)}`, TSE + item('Votos', 'na', 'Cargo executivo não vota.') + item('Proposta de governo', 'sim', 'TSE, em PDF.') + item('Diário Oficial do município', dq, dqNota)))
+    const acoes = [cam.url ? fonte(cam.url) : '']
+    if (cam.interior && cam.medida?.estado !== 'procurando') acoes.push(`<button class="btn btn-sm btn-go" type="button" id="procurar">Procurar o SAPL da câmara</button>`)
+    cards.push(card('Vereador', `${esc(cam.nome)} · ${esc(cam.acesso)}`, itensLegislativo(cam.nome.replace('Câmara Municipal', 'A Câmara'), cam, cam.nota ? `<p class="hint" style="margin:4px 0 0">${esc(cam.nota)}</p>` : ''), acoes.join('')))
+  }
+  $('#cargos').innerHTML = cards.join('')
+  $('#cargos-sub').textContent = u.uf === 'DF' ? 'No Distrito Federal você vota para presidente, senador, deputado federal, governador e deputado distrital.' : `Em ${cid.territory_name} (${u.uf}) você vota para estes sete cargos.`
+  $('#procurar')?.addEventListener('click', () => procurarSapl(cidadeAtual(), u.uf))
+  const info = $('#cidade-info')
+  info.textContent = cidades && cidades.length ? `${num(cidades.filter((c) => c.state_code === u.uf).length)} municípios em ${u.nome}.` : (cidades ? 'Lista de cidades indisponível agora: só a capital.' : 'Carregando as cidades…')
+}
+
+/* ======================================================================
+   03 · Quem representa você
+   ====================================================================== */
+let abaAtual = 'fed'
+function abasDisponiveis() {
+  const u = UFS.find((x) => x.uf === ufSel.value)
+  const al = ASSEMBLEIAS[u.uf]
+  const cam = camaraDaCidade()
+  return [
+    { id: 'fed', rot: `Deputados federais (${u.uf})` },
+    { id: 'sen', rot: `Senadores (${u.uf})` },
+    { id: 'est', rot: u.uf === 'DF' ? 'Deputados distritais' : 'Deputados estaduais', sapl: al.sapl, casa: al.sigla },
+    ...(cam ? [{ id: 'ver', rot: `Vereadores (${cidadeAtual().territory_name})`, sapl: cam.sapl, casa: cam.nome }] : []),
+  ]
+}
+function renderAbas() {
+  const abas = abasDisponiveis()
+  if (!abas.some((a) => a.id === abaAtual)) abaAtual = 'fed'
+  $('#abas').innerHTML = abas.map((a) => `<button class="aba" role="tab" type="button" data-aba="${a.id}" aria-selected="${a.id === abaAtual}">${esc(a.rot)}</button>`).join('')
+  $('#abas').querySelectorAll('.aba').forEach((b) => b.addEventListener('click', () => { abaAtual = b.dataset.aba; renderAbas() }))
+  carregarLista(abas.find((a) => a.id === abaAtual))
+}
+
+let pedidoLista = 0
+async function carregarLista(aba) {
+  const meu = ++pedidoLista
+  const alvo = $('#lista')
+  alvo.innerHTML = '<p class="carregando">Buscando na fonte oficial</p>'
+  const uf = ufSel.value
+  try {
+    let pessoas = []
+    if (aba.id === 'fed') {
+      const { json } = await pegar(`https://dadosabertos.camara.leg.br/api/v2/deputados?siglaUf=${uf}&itens=100&ordem=ASC&ordenarPor=nome`)
+      pessoas = json.dados.map((d) => ({ tipo: 'fed', id: d.id, nome: d.nome, partido: `${d.siglaPartido}-${d.siglaUf}`, foto: d.urlFoto }))
+    } else if (aba.id === 'sen') {
+      const { json } = await pegar(`https://legis.senado.leg.br/dadosabertos/senador/lista/atual.json?uf=${uf}`)
+      let p = json.ListaParlamentarEmExercicio?.Parlamentares?.Parlamentar ?? []
+      if (!Array.isArray(p)) p = [p]
+      pessoas = p.map((x) => x.IdentificacaoParlamentar).map((x) => ({ tipo: 'sen', id: x.CodigoParlamentar, nome: x.NomeParlamentar, partido: `${x.SiglaPartidoParlamentar}-${x.UfParlamentar}`, foto: https(x.UrlFotoParlamentar), pagina: x.UrlPaginaParlamentar }))
+    } else if (aba.sapl) {
+      const leg = await saplLegislatura(aba.sapl)
+      const [{ itens: mandatos }, { itens: parls }] = await Promise.all([
+        saplTodas(aba.sapl, `parlamentares/mandato/?legislatura=${leg.id}`, 3),
+        saplTodas(aba.sapl, 'parlamentares/parlamentar/', 6),
+      ])
+      const porId = new Map(parls.map((p) => [p.id, p]))
+      const vistos = new Map()
+      for (const m of mandatos) {
+        const p = porId.get(m.parlamentar)
+        if (!p || (vistos.has(p.id) && !m.titular)) continue
+        vistos.set(p.id, { tipo: aba.id, base: aba.sapl, casa: aba.casa, leg, id: p.id, nome: p.nome_parlamentar || p.nome_completo, partido: m.titular ? 'titular' : 'suplente', foto: https(p.fotografia) })
+      }
+      pessoas = [...vistos.values()].sort((a, b) => (a.partido === b.partido ? a.nome.localeCompare(b.nome, 'pt-BR') : a.partido === 'titular' ? -1 : 1))
+    } else {
+      const casa = aba.id === 'est' ? ASSEMBLEIAS[uf] : camaraDaCidade()
+      if (meu !== pedidoLista) return
+      alvo.innerHTML = `<div class="vazio"><strong>${esc(aba.id === 'est' ? `A ${casa.sigla}` : casa.nome)} não tem uma API aberta com a lista e a atuação de cada um.</strong><br>Na versão final, os eleitos entram pelo TSE (ficha e cartãozinho) e a atuação aparece onde a casa publicar.${casa.url ? ` <a href="${esc(casa.url)}" target="_blank" rel="noopener">Ver o que a casa publica ↗</a>` : ''}</div>`
+      return
+    }
+    if (meu !== pedidoLista) return
+    if (!pessoas.length) { alvo.innerHTML = '<div class="vazio">A fonte não devolveu ninguém agora.</div>'; return }
+    alvo.innerHTML = `<div class="pessoas">${pessoas.map((p, i) => `<button type="button" class="pessoa" data-i="${i}">${img(p.foto)}<span><b>${esc(p.nome)}</b><span>${esc(p.partido)}</span></span></button>`).join('')}</div>`
+    alvo.querySelectorAll('.pessoa').forEach((b) => b.addEventListener('click', () => abrirFicha(pessoas[Number(b.dataset.i)])))
+  } catch (e) {
+    if (meu !== pedidoLista) return
+    alvo.innerHTML = `<div class="vazio"><strong>Não deu para buscar agora</strong> (${esc(e.message)}). As APIs oficiais às vezes ficam fora do ar; tente de novo em instantes.</div>`
+  }
+}
+
+/* ======================================================================
+   Ficha
+   ====================================================================== */
+const dlg = $('#ficha')
+const CARGO_DO_TIPO = { fed: 'depfed', sen: 'senador', est: 'depest', ver: 'vereador' }
+const NOME_CARGO = { fed: 'Deputado federal', sen: 'Senador', est: ufSel.value === 'DF' ? 'Deputado distrital' : 'Deputado estadual', ver: 'Vereador' }
+let resumoFicha = []
+
+function bloco(id, titulo) { return `<section class="bloco" id="b-${id}"><div class="bloco-topo"><h4>${titulo}</h4><span class="st-slot"></span></div><div class="conteudo"><p class="carregando">Carregando</p></div></section>` }
+function encher(id, st, html, fonte) {
+  const b = dlg.querySelector(`#b-${id}`)
+  if (!b) return
+  b.querySelector('.st-slot').innerHTML = chip(st)
+  b.querySelector('.conteudo').innerHTML = html + (fonte ? `<div class="fonte">Fonte: ${fonte}</div>` : '')
+}
+const falhou = (id, e) => encher(id, 'naosei', `<p class="hint">Não deu para carregar agora (${esc(e.message)}).</p>`)
+const depois = (id, texto) => encher(id, 'sim', `<p class="hint">${texto}</p>`)
+
+function abrirFicha(p) {
+  resumoFicha = []
+  const cargo = p.tipo === 'est' ? (ufSel.value === 'DF' ? 'Deputado distrital' : 'Deputado estadual') : NOME_CARGO[p.tipo]
+  dlg.innerHTML = `
+    <div class="ficha-topo">${img(p.foto)}<div style="flex:1;min-width:0"><h3 id="ficha-nome">${esc(p.nome)}</h3><div class="quem">${esc(cargo)} · ${esc(p.partido)}${p.casa ? ` · ${esc(p.casa)}` : ''}</div></div>
+      <button class="btn icone" type="button" id="fechar" aria-label="Fechar">✕</button></div>
+    <div class="ficha-corpo">
+      ${bloco('presenca', 'Presença')}${bloco('votos', 'Votos')}${bloco('projetos', 'Projetos e pedidos')}${bloco('gastos', 'Gastos do gabinete')}
+      ${p.tipo === 'fed' || p.tipo === 'sen' ? bloco('emendas', 'Emendas') : ''}${bloco('campanha', 'Campanha (TSE)')}
+    </div>
+    <div class="ficha-pe"><button class="btn btn-go" type="button" id="pro-cartao">Pôr no meu cartãozinho</button>
+      <span class="hint" style="align-self:center">Só dados oficiais. Sem nota, sem ranking.</span></div>`
+  dlg.querySelector('#fechar').addEventListener('click', () => dlg.close())
+  dlg.querySelector('#pro-cartao').addEventListener('click', () => {
+    porNoCartao(CARGO_DO_TIPO[p.tipo], { nome: p.nome, partido: p.partido.includes('-') ? p.partido.split('-')[0] : '', resumo: resumoFicha.join(' · ') })
+    dlg.close()
+    $('#t-cola').scrollIntoView({ behavior: 'smooth' })
+  })
+  dlg.showModal()
+  if (p.tipo === 'fed') fichaCamara(p)
+  else if (p.tipo === 'sen') fichaSenado(p)
+  else fichaSapl(p)
+  depois('campanha', 'Bens declarados, doações recebidas e gastos de campanha vêm dos arquivos do TSE: entram na versão final (o coletor baixa e cruza).')
+}
+
+/* ---------- Deputado federal (Câmara) ---------- */
+const CAMARA = 'https://dadosabertos.camara.leg.br/api/v2'
+let votacoesCamara = null // as mesmas votações servem para todos os deputados
+async function votacoesRecentesCamara() {
+  if (votacoesCamara) return votacoesCamara
+  // A API aceita no máximo 3 meses por pedido: com poucas votações (recesso, eleição), recua mais 3.
+  const lista = []
+  for (let janela = 0; janela < 2 && lista.length < 40; janela++) {
+    const fim = new Date(HOJE); fim.setDate(fim.getDate() - 86 * janela)
+    const ini = new Date(fim); ini.setDate(ini.getDate() - 85)
+    const { json } = await pegar(`${CAMARA}/votacoes?idOrgao=180&dataInicio=${iso(ini)}&dataFim=${iso(fim)}&ordem=DESC&ordenarPor=dataHoraRegistro&itens=100`)
+    lista.push(...json.dados)
+  }
+  const nominais = []
+  for (const v of lista.slice(0, 60)) { // votação simbólica não tem voto por deputado
+    let vs = null
+    for (let tentativa = 0; tentativa < 2 && !vs; tentativa++) {
+      try { vs = (await pegar(`${CAMARA}/votacoes/${v.id}/votos`)).json } catch (e) { /* a API às vezes falha numa votação: tenta de novo e depois pula */ }
+    }
+    if (vs?.dados.length) nominais.push({ v, votos: vs.dados })
+    if (nominais.length >= 10) break
+  }
+  if (!nominais.length) throw new Error('nenhuma votação nominal recente respondeu')
+  votacoesCamara = nominais
+  return nominais
+}
+const classeVoto = (t) => (/^sim$/i.test(t) ? 'sim' : /^n[ãa]o$/i.test(t) ? 'nao' : 'outro')
+
+async function fichaCamara(p) {
+  const fonteC = '<a href="https://dadosabertos.camara.leg.br/" target="_blank" rel="noopener">Câmara dos Deputados, dados abertos</a>'
+  votacoesRecentesCamara().then((nom) => {
+    const meus = nom.map(({ v, votos }) => ({ v, voto: votos.find((x) => x.deputado_?.id === p.id)?.tipoVoto ?? 'Não votou' }))
+    const votou = meus.filter((m) => m.voto !== 'Não votou').length
+    encher('votos', 'sim', `<div class="numero">${votou} de ${meus.length}<small>votações nominais recentes do Plenário em que registrou voto</small></div>
+      <ul class="lista">${meus.map((m) => `<li><span title="${esc(m.v.descricao)}">${esc(m.v.data.split('-').reverse().join('/'))} · ${esc(m.v.descricao)}</span><span class="voto ${classeVoto(m.voto)}">${esc(m.voto)}</span></li>`).join('')}</ul>`, fonteC)
+    encher('presenca', 'sim', `<p>Registrou voto em <b>${votou} das ${meus.length}</b> últimas votações nominais.</p><p class="hint">"Não votou" não é sempre falta: pode ser quem preside a sessão, licença ou obstrução. A lista de presença por sessão existe (arquivo anual da Câmara) e entra na versão final.</p>`, fonteC)
+    resumoFicha.unshift(`votou em ${votou} de ${meus.length} votações recentes`)
+  }).catch((e) => { falhou('votos', e); falhou('presenca', e) })
+
+  const TIPOS = [['PL', 'projetos de lei'], ['PEC', 'emendas à Constituição'], ['PLP', 'leis complementares'], ['PDL', 'decretos legislativos'], ['REQ', 'requerimentos'], ['INC', 'indicações']]
+  Promise.all(TIPOS.map(([t]) => pegar(`${CAMARA}/proposicoes?idDeputadoAutor=${p.id}&siglaTipo=${t}&dataApresentacaoInicio=${INICIO_LEG}&itens=1`).then((r) => r.total ?? r.json.dados.length)))
+    .then((tot) => {
+      encher('projetos', 'sim', `<div class="contas">${TIPOS.map(([t, n], i) => `<span class="conta">${num(tot[i])} ${n}</span>`).join('')}</div><p class="hint">Desde 02/2023, contando coautoria. Indicação é o pedido de uma obra ou ação ao governo.</p>`, fonteC)
+      if (tot[0]) resumoFicha.push(`${num(tot[0])} projetos de lei`)
+    }).catch((e) => falhou('projetos', e))
+
+  ;(async () => {
+    let soma = 0, n = 0
+    const porTipo = new Map()
+    for (let pg = 1; pg <= 10; pg++) {
+      const { json } = await pegar(`${CAMARA}/deputados/${p.id}/despesas?idLegislatura=${LEG_CAMARA}&ano=${ANO}&itens=100&pagina=${pg}`)
+      for (const d of json.dados) { soma += d.valorLiquido; n++; porTipo.set(d.tipoDespesa, (porTipo.get(d.tipoDespesa) || 0) + d.valorLiquido) }
+      if (json.dados.length < 100) break
+    }
+    const top = [...porTipo.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3)
+    encher('gastos', 'sim', `<div class="numero">${reais(soma)}<small>da cota parlamentar em ${ANO} (${num(n)} notas)</small></div>
+      <ul class="lista">${top.map(([t, v]) => `<li><span>${esc(t.toLowerCase())}</span><span class="mono">${reais(v)}</span></li>`).join('')}</ul>`, fonteC)
+    resumoFicha.push(`${reais(soma)} de cota em ${ANO}`)
+  })().catch((e) => falhou('gastos', e))
+
+  depois('emendas', 'Quanto mandou, para onde e quanto já foi pago: Portal da Transparência. Precisa de uma chave gratuita, que fica no servidor: entra na versão final.')
+}
+
+/* ---------- Senador ---------- */
+const SENADO = 'https://legis.senado.leg.br/dadosabertos'
+const VOTOU = ['Sim', 'Não', 'Abstenção', 'Votou', 'Obstrução']
+const PRESENTE = ['P-NRV', 'Presidente (art. 51 RISF)']
+const JUSTIF = { AP: 'atividade parlamentar', MIS: 'missão oficial', LS: 'licença', LP: 'licença', LAP: 'licença', LG: 'licença', REP: 'representação' }
+const ROTULO_VOTO = { ...JUSTIF, 'P-NRV': 'presente, não votou', NCom: 'não compareceu', 'Presidente (art. 51 RISF)': 'presidindo' }
+async function fichaSenado(p) {
+  const fonteS = '<a href="https://legis.senado.leg.br/dadosabertos/docs/" target="_blank" rel="noopener">Senado Federal, dados abertos</a>'
+  pegar(`${SENADO}/votacao.json?codigoParlamentar=${p.id}&dataInicio=${ANO}-01-01&dataFim=${iso(HOJE)}`).then(({ json }) => {
+    const lista = (Array.isArray(json) ? json : []).map((s) => ({ s, voto: (s.votos || [])[0]?.siglaVotoParlamentar ?? '?' }))
+    const total = lista.length
+    const votou = lista.filter((x) => VOTOU.includes(x.voto)).length
+    const presente = lista.filter((x) => PRESENTE.includes(x.voto)).length
+    const justif = lista.filter((x) => JUSTIF[x.voto]).length
+    const semJust = lista.filter((x) => x.voto === 'NCom').length
+    const outros = total - votou - presente - justif - semJust
+    encher('presenca', 'sim', `<div class="numero">${votou + presente} de ${total}<small>votações de ${ANO} em que estava presente</small></div>
+      <div class="contas"><span class="conta">${votou} votou</span><span class="conta">${presente} presente sem votar</span><span class="conta">${justif} ausência justificada</span><span class="conta">${semJust} falta sem justificativa</span>${outros ? `<span class="conta">${outros} outros</span>` : ''}</div>
+      <p class="hint">O Senado informa o motivo de cada ausência: atividade parlamentar, missão oficial, licença ou "não compareceu".</p>`, fonteS)
+    encher('votos', 'sim', `<ul class="lista">${lista.slice(-8).reverse().map(({ s, voto }) => `<li><span title="${esc(s.descricaoVotacao)}">${esc((s.dataSessao || '').split('-').reverse().join('/'))} · ${esc(s.identificacao || s.descricaoVotacao)}</span><span class="voto ${classeVoto(voto)}">${esc(ROTULO_VOTO[voto] || voto)}</span></li>`).join('')}</ul><p class="hint">As 8 mais recentes de ${total}. Em votação secreta aparece só "Votou".</p>`, fonteS)
+    resumoFicha.unshift(`presente em ${votou + presente} de ${total} votações em ${ANO}`)
+  }).catch((e) => { falhou('presenca', e); falhou('votos', e) })
+
+  pegar(`${SENADO}/processo.json?codigoParlamentarAutor=${p.id}&dataInicioApresentacao=${INICIO_LEG}`).then(({ json }) => {
+    const lista = Array.isArray(json) ? json : []
+    // Sigla no começo da identificação ("PL 90/2023"). RQS/REQ/RQN são todos requerimentos.
+    const NOMES = { PL: 'projetos de lei', PEC: 'emendas à Constituição', RQS: 'requerimentos', REQ: 'requerimentos', RQN: 'requerimentos', PLP: 'leis complementares', PDL: 'decretos legislativos', PRS: 'resoluções' }
+    const porTipo = new Map()
+    for (const x of lista) { const t = NOMES[(x.identificacao || '').split(' ')[0]] || 'outros'; porTipo.set(t, (porTipo.get(t) || 0) + 1) }
+    encher('projetos', 'sim', `<div class="numero">${num(lista.length)}<small>proposições desde 02/2023, contando coautoria</small></div>
+      <div class="contas">${[...porTipo.entries()].sort((a, b) => (a[0] === 'outros') - (b[0] === 'outros') || b[1] - a[1]).map(([t, n]) => `<span class="conta">${num(n)} ${esc(t)}</span>`).join('')}</div>`, fonteS)
+    const pl = porTipo.get('projetos de lei'); if (pl) resumoFicha.push(`${num(pl)} projetos de lei`)
+  }).catch((e) => falhou('projetos', e))
+
+  depois('gastos', 'O Senado publica a cota (CEAPS) numa API separada, diária: entra na versão final.')
+  depois('emendas', 'Quanto mandou, para onde e quanto já foi pago: Portal da Transparência. Precisa de uma chave gratuita, que fica no servidor: entra na versão final.')
+}
+
+/* ---------- Deputado estadual ou vereador (SAPL) ---------- */
+async function fichaSapl(p) {
+  const fonteP = `<a href="${esc(p.base)}/api/" target="_blank" rel="noopener">${esc(p.casa)}, SAPL (Interlegis)</a>`
+  const { leg, base } = p
+  const st = (n) => (n > 0 ? 'sim' : 'nao')
+
+  ;(async () => {
+    const tipos = (await saplTodas(base, 'sessao/tiposessaoplenaria/', 1)).itens
+    const ordinaria = tipos.find((t) => /(^|\s)ordin/i.test(t.nome)) // não pegar "Extraordinária"
+    const sessoes = await saplTodas(base, `sessao/sessaoplenaria/?legislatura=${leg.id}${ordinaria ? `&tipo=${ordinaria.id}` : ''}`, 6)
+    const ids = new Set(sessoes.itens.map((s) => s.id))
+    const pres = await saplTodas(base, `sessao/sessaoplenariapresenca/?parlamentar=${p.id}`, 15)
+    const aqui = pres.itens.filter((x) => ids.has(x.sessao_plenaria)).length
+    if (!sessoes.total || !pres.total) {
+      encher('presenca', 'nao', `<p>${esc(p.casa)} não registra a presença ${sessoes.total ? 'deste parlamentar' : 'das sessões desta legislatura'} no sistema.</p>`, fonteP)
+      return
+    }
+    encher('presenca', 'sim', `<div class="numero">${aqui} de ${sessoes.total}<small>sessões ${ordinaria ? 'ordinárias ' : ''}desta legislatura com presença registrada</small></div><p class="hint">Falta justificada não vem separada no sistema.${pres.completo ? '' : ' Contagem parcial: o histórico é longo.'}</p>`, fonteP)
+    resumoFicha.unshift(`presente em ${aqui} de ${sessoes.total} sessões`)
+  })().catch((e) => falhou('presenca', e))
+
+  ;(async () => {
+    const vs = await saplTodas(base, `sessao/votoparlamentar/?parlamentar=${p.id}`, 5)
+    const daLeg = vs.itens.filter((v) => !v.data_hora || v.data_hora.slice(0, 10) >= leg.data_inicio)
+    if (!vs.total) { encher('votos', 'nao', `<p>${esc(p.casa)} não registra votos nominais deste parlamentar no sistema.</p>`, fonteP); return }
+    const conta = new Map()
+    for (const v of daLeg) conta.set(v.voto, (conta.get(v.voto) || 0) + 1)
+    // O SAPL guarda o IP e o usuário de quem lançou o voto: esses campos nunca aparecem aqui.
+    encher('votos', daLeg.length ? 'sim' : 'parcial', `<div class="numero">${num(daLeg.length)}<small>votos registrados nesta legislatura${vs.completo ? '' : ' (entre os mais recentes baixados)'}</small></div>
+      <div class="contas">${[...conta.entries()].sort((a, b) => b[1] - a[1]).map(([v, n]) => `<span class="conta">${num(n)} ${esc(v)}</span>`).join('')}</div>
+      ${daLeg.length ? '' : `<p class="hint">Há ${num(vs.total)} votos no sistema, todos de legislaturas anteriores.</p>`}`, fonteP)
+  })().catch((e) => falhou('votos', e))
+
+  ;(async () => {
+    const autores = (await saplPagina(base, `base/autor/?object_id=${p.id}`)).results.filter((a) => a.object_id === p.id && (a.autor_related?.value === p.id || a.nome === p.nome))
+    if (!autores.length) { encher('projetos', 'nao', `<p>Não achamos este parlamentar como autor no sistema.</p>`, fonteP); return }
+    const autor = autores[0].id
+    const anoIni = Number(leg.data_inicio.slice(0, 4))
+    const anos = Array.from({ length: ANO - anoIni + 1 }, (_, i) => anoIni + i)
+    // Total exato ano a ano (filtro ano=); os tipos saem dos 100 primeiros de cada ano.
+    const [porAno, tipos, total] = await Promise.all([
+      Promise.all(anos.map((a) => saplPagina(base, `materia/materialegislativa/?autores=${autor}&ano=${a}`))),
+      saplTodas(base, 'materia/tipomaterialegislativa/', 2),
+      saplTotal(base, `materia/materialegislativa/?autores=${autor}`),
+    ])
+    const nomeTipo = new Map(tipos.itens.map((t) => [t.id, t.descricao || t.sigla]))
+    const daLeg = porAno.reduce((s, j) => s + j.pagination.total_entries, 0)
+    const amostra = porAno.flatMap((j) => j.results)
+    const conta = new Map()
+    for (const m of amostra) { const t = nomeTipo.get(m.tipo) || `tipo ${m.tipo}`; conta.set(t, (conta.get(t) || 0) + 1) }
+    const exato = amostra.length === daLeg
+    encher('projetos', st(total), `<div class="numero">${num(daLeg)}<small>matérias desde ${anoIni} (${num(total)} em todos os mandatos)</small></div>
+      <div class="contas">${[...conta.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6).map(([t, n]) => `<span class="conta">${num(n)} ${esc(t.toLowerCase())}</span>`).join('')}</div>
+      ${exato ? '' : `<p class="hint">Os tipos são contados nas ${num(amostra.length)} primeiras de cada ano.</p>`}`, fonteP)
+    if (daLeg) resumoFicha.push(`${num(daLeg)} matérias desde ${anoIni}`)
+  })().catch((e) => falhou('projetos', e))
+
+  const casaInfo = p.tipo === 'est' ? ASSEMBLEIAS[ufSel.value] : camaraDaCidade()
+  const g = casaInfo?.gastos || 'naosei'
+  encher('gastos', g, `<p class="hint">${g === 'sim' ? 'A casa publica os gastos por parlamentar fora do SAPL: entram na versão final.' : g === 'nao' ? naoPublica(p.casa, 'os gastos por parlamentar') : g === 'parcial' ? 'A casa mostra os gastos só em página: entram na versão final se der para ler.' : 'Ainda não conferido para esta casa.'}</p>`, casaInfo?.url ? `<a href="${esc(casaInfo.url)}" target="_blank" rel="noopener">${esc(p.casa)}</a>` : '')
+}
+
+/* ======================================================================
+   04 · Cartãozinho
+   ====================================================================== */
+const CARGOS_COLA = [
+  { grupo: 'Eleição geral', id: 'depfed', nome: 'Dep. federal', dig: 4 },
+  { grupo: 'Eleição geral', id: 'depest', nome: 'Dep. estadual', dig: 5 },
+  { grupo: 'Eleição geral', id: 'senador', nome: 'Senador', dig: 3 },
+  { grupo: 'Eleição geral', id: 'governador', nome: 'Governador', dig: 2 },
+  { grupo: 'Eleição geral', id: 'presidente', nome: 'Presidente', dig: 2 },
+  { grupo: 'Eleição municipal', id: 'vereador', nome: 'Vereador', dig: 5 },
+  { grupo: 'Eleição municipal', id: 'prefeito', nome: 'Prefeito', dig: 2 },
+]
+const cola = ler('vsv-cola', {})
+function porNoCartao(id, dados) { cola[id] = { ...(cola[id] || {}), ...dados }; guardar('vsv-cola', cola); renderLinhas(); renderCola() }
+
+function renderLinhas() {
+  let grupo = ''
+  $('#linhas').innerHTML = CARGOS_COLA.map((c) => {
+    const v = cola[c.id] || {}
+    const nomeCargo = c.id === 'depest' && ufSel.value === 'DF' ? 'Dep. distrital' : c.nome
+    const t = c.grupo !== grupo ? `<div class="grupo-t">${(grupo = c.grupo)}</div>` : ''
+    return `${t}<div class="linha"><span class="cg">${nomeCargo}</span>
+      <input inputmode="numeric" maxlength="${c.dig}" placeholder="${'0'.repeat(c.dig)}" aria-label="Número para ${nomeCargo}" data-id="${c.id}" data-k="numero" value="${esc(v.numero || '')}" class="mono">
+      <input type="text" class="nome" placeholder="Nome (opcional)" aria-label="Nome para ${nomeCargo}" data-id="${c.id}" data-k="nome" value="${esc(v.nome || '')}"></div>`
+  }).join('')
+  $('#linhas').querySelectorAll('input').forEach((i) => i.addEventListener('input', () => {
+    if (i.dataset.k === 'numero') i.value = i.value.replace(/\D/g, '')
+    cola[i.dataset.id] = { ...(cola[i.dataset.id] || {}), [i.dataset.k]: i.value }
+    guardar('vsv-cola', cola)
+    renderCola()
+  }))
+}
+function renderCola() {
+  const u = UFS.find((x) => x.uf === ufSel.value)
+  let grupo = ''
+  const linhas = CARGOS_COLA.filter((c) => cola[c.id]?.numero || cola[c.id]?.nome).map((c) => {
+    const v = cola[c.id]
+    const g = c.grupo !== grupo ? `<div class="g">${(grupo = c.grupo)}</div>` : ''
+    const nomeCargo = c.id === 'depest' && u.uf === 'DF' ? 'Dep. distrital' : c.nome
+    return `${g}<div class="r"><span class="c">${nomeCargo}</span><span class="num">${esc(v.numero || '·'.repeat(c.dig))}</span>
+      <span class="nm">${esc(v.nome || '')}${v.partido ? ` · ${esc(v.partido)}` : ''}</span>${v.resumo ? `<span class="rs">${esc(v.resumo)}</span>` : ''}</div>`
+  })
+  $('#cola').innerHTML = `<h3>Minha cola <small>seuvoto.bugadao.com</small></h3>${linhas.join('') || '<p style="font-size:.8rem;color:#52525B;margin:10px 0 0">Digite os números ao lado, ou abra a ficha de alguém e toque em "Pôr no meu cartãozinho".</p>'}
+    <div class="pe">Na urna, a ordem é a desta cola. Dados de fontes oficiais${linhas.length ? `, consultados em ${HOJE.toLocaleDateString('pt-BR')}` : ''}.</div>`
+}
+$('#imprimir').addEventListener('click', () => window.print())
+$('#limpar-cola').addEventListener('click', () => { for (const k of Object.keys(cola)) delete cola[k]; guardar('vsv-cola', cola); renderLinhas(); renderCola() })
+
+/* ======================================================================
+   Liga tudo
+   ====================================================================== */
+function mudouLugar() {
+  estado.uf = ufSel.value
+  estado.cidade = cidSel.value || null
+  guardar('vsv-onde', estado)
+  NOME_CARGO.est = ufSel.value === 'DF' ? 'Deputado distrital' : 'Deputado estadual'
+  renderCargos(); renderAbas(); renderLinhas(); renderCola()
+}
+ufSel.addEventListener('change', () => { estado.cidade = null; preencherCidades(); mudouLugar() })
+cidSel.addEventListener('change', mudouLugar)
+$('#tema').addEventListener('click', () => {
+  const escuro = document.documentElement.getAttribute('data-theme') === 'dark' || (!document.documentElement.getAttribute('data-theme') && matchMedia('(prefers-color-scheme: dark)').matches)
+  const novo = escuro ? 'light' : 'dark'
+  document.documentElement.setAttribute('data-theme', novo)
+  try { localStorage.setItem('bugadao-tema', novo) } catch (e) {}
+})
+
+preencherCidades(); renderCargos(); renderAbas(); renderLinhas(); renderCola()
+carregarCidades().then(() => { preencherCidades(); renderCargos(); renderAbas() })
+</script>
+</body>
+</html>

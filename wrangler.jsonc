@@ -1,0 +1,35 @@
+// Um Worker só: serve o site (dist/, SPA) e responde /api/*. O coletor roda no cron, aqui mesmo.
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "seuvoto-bugadao",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    // Só a API passa pelo código; o resto é arquivo estático (de graça e com o _headers).
+    "run_worker_first": ["/api/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "seuvoto",
+      // Criado em 24/10/2026 (região ENAM). O wrangler dev usa uma cópia local, em .wrangler/.
+      "database_id": "9728bbf9-960c-448e-8c20-4977526ee519",
+      "migrations_dir": "migrations"
+    }
+  ],
+  // O coletor anda um pouco a cada 10 minutos (fila na tabela tarefas), sem estourar limite.
+  "triggers": { "crons": ["*/10 * * * *"] },
+  "limits": { "cpu_ms": 60000 },
+  "vars": {
+    // De quando para cá buscar votações e sessões. Local: ver .dev.vars (encurta a primeira carga).
+    "COLETA_DESDE": "2023-02-01",
+    // Só estes estados (separados por vírgula). Vazio = todos. Serve para a coleta local ser rápida.
+    "COLETA_UFS": ""
+  },
+  "routes": [{ "pattern": "seuvoto.bugadao.com", "custom_domain": true }],
+  "workers_dev": false,
+  "observability": { "enabled": true }
+}

@@ -1,0 +1,3 @@
+# Copie para .dev.vars (wrangler dev). Encurta a primeira coleta local.
+COLETA_DESDE=2026-04-01
+COLETA_UFS=PI,RN,PR
