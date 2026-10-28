@@ -4,6 +4,22 @@ Sistema de fichas de políticos de todos os cargos e estados (Worker + D1 + cole
 Leia o `README.md` (arquitetura, como rodar, o que falta) e, conforme a tarefa, `docs/fontes.md`
 (como cada API se comporta) ou `docs/cobertura.md` (o que cada casa publica). Regras gerais: `../CLAUDE.md`.
 
+## Onde mexer (leia só o do assunto)
+
+| Vai mexer em… | Abra |
+|---|---|
+| Uma fonte (Câmara, Senado, SAPL) | `worker/coletor/camara.ts`, `senado.ts` ou `sapl.ts` + a seção dela em `docs/fontes.md` |
+| Casas, cidades, diretório do Interlegis | `worker/coletor/base.ts` |
+| Fila, prioridade, orçamento da rodada | `worker/coletor/fila.ts` |
+| Regra de cálculo (presença, médias, gastos) | `shared/logica.ts` + `tests/` |
+| O que cada casa publica / "não publica" | `shared/cobertura.ts` + `docs/cobertura.md` |
+| Rota da API ou formato da resposta | `worker/api.ts` + `shared/tipos.ts` |
+| Tela | `src/paginas/` ou `src/components/` |
+
+Não abra `prototipo/index.html` (~60 KB, só histórico de 23/10/2026). `package-lock.json`,
+`dist/` e `.wrangler/` estão bloqueados no `.claude/settings.json`. Estado da coleta no ar:
+`curl -s https://seuvoto.bugadao.com/api/saude` (pequeno, sem segredo).
+
 ## Regras deste projeto
 
 1. **pt-BR** em tudo. **Commit e push são do dono**: deixe staged e entregue a mensagem.
